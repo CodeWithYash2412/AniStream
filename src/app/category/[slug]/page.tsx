@@ -4,8 +4,8 @@ import { notFound } from "next/navigation";
 import type { Anime } from "@/lib/types";
 
 async function getGenres() {
-    const res = await fetchZoro('genre/list');
-    return res.map((g: any) => g.id);
+    const res: string[] = await fetchZoro('genre/list');
+    return res;
 }
 
 function capitalize(s: string) {
@@ -15,7 +15,7 @@ function capitalize(s: string) {
 export default async function CategoryPage({ params }: { params: { slug: string } }) {
     const slug = decodeURIComponent(params.slug);
     const allGenres = await getGenres();
-    const validCategories = ['tv', 'movie', 'ova', 'ona', 'special', ...allGenres];
+    const validCategories = ['tv', 'movie', 'ova', 'ona', 'special', 'most-popular', 'most-favorite', 'latest-completed', ...allGenres];
     
     if (!validCategories.includes(slug)) {
         notFound();
