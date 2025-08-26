@@ -1,5 +1,6 @@
 
 "use client"
+import React from "react";
 import { fetchZoro } from "@/lib/utils";
 import { notFound } from "next/navigation";
 import Image from "next/image";
@@ -35,8 +36,9 @@ async function getAnimeData(id: string) {
 }
 
 
-export default function AnimeDetailPage({ params: { id } }: { params: { id: string } }) {
-    const { user } = useAuth();
+export default function AnimeDetailPage({ params }: { params: { id: string } }) {
+  const { id } = React.use(params);  
+  const { user } = useAuth();
     const { toast } = useToast();
     const [anime, setAnime] = useState<Anime | null>(null);
     const [recommendedAnime, setRecommendedAnime] = useState<Anime[]>([]);
