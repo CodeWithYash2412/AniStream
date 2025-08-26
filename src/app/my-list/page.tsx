@@ -1,15 +1,21 @@
 "use client";
 
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { useAuth } from '@/context/AuthContext';
+import { db } from '@/lib/firebase';
+import { collection, doc, getDoc, onSnapshot, query, where } from 'firebase/firestore';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { AnimeCard } from "@/components/anime/AnimeCard";
-import { fetchZoro } from "@/lib/utils";
 import type { Anime } from "@/lib/types";
-import { Eye, CheckCircle, Clock, XCircle, Star } from 'lucide-react';
 import { Katana } from '@/components/shared/Icons';
 import { Skeleton } from '@/components/ui/skeleton';
+import { CheckCircle, Clock, XCircle } from 'lucide-react';
+import { fetchZoro } from '@/lib/utils';
 
 export default function MyListPage() {
+  const { user, loading: authLoading } = useAuth();
+  const router = useRouter();
   const [lists, setLists] = useState([
     { value: "watching", label: "Watching", icon: <Katana className="w-4 h-4" />, data: [] as Anime[], isLoading: true },
     { value: "completed", label: "Completed", icon: <CheckCircle className="w-4 h-4" />, data: [] as Anime[], isLoading: true },
@@ -18,27 +24,66 @@ export default function MyListPage() {
   ]);
 
   useEffect(() => {
-    const fetchLists = async () => {
-      // In a real app, this would fetch user-specific lists.
-      // For this demo, we'll fetch data for each category.
-      const listPromises = [
-        fetchZoro('top-airing'),
-        fetchZoro('latest-completed'),
-        fetchZoro('most-favorite'),
-        fetchZoro('most-popular')
-      ];
-      
-      const [watchingRes, completedRes, onHoldRes, droppedRes] = await Promise.all(listPromises);
-
-      setLists([
-        { value: "watching", label: "Watching", icon: <Katana className="w-4 h-4" />, data: watchingRes.results.slice(0,6), isLoading: false },
-        { value: "completed", label: "Completed", icon: <CheckCircle className="w-4 h-4" />, data: completedRes.results.slice(0,12), isLoading: false },
-        { value: "on_hold", label: "On Hold", icon: <Clock className="w-4 h-4" />, data: onHoldRes.results.slice(0,4), isLoading: false },
-        { value: "dropped", label: "Dropped", icon: <XCircle className="w-4 h-4" />, data: droppedRes.results.slice(0,2), isLoading: false },
-      ]);
+    if (!authLoading && !user) {
+      router.push('/login');
     }
-    fetchLists();
-  }, []);
+  }, [user, authLoading, router]);
+
+  useEffect(() => {
+    if (!user) return;
+
+    const fetchAnimeDetails = async (animeIds: string[]) => {
+        const animePromises = animeIds.map(id => fetchZoro('info', { id }));
+        const animeResults = await Promise.all(animePromises);
+        return animeResults.filter(a => a && a.id);
+    }
+    
+    const unsub = onSnapshot(doc(db, 'users', user.uid), async (docSnap) => {
+        if (docSnap.exists()) {
+            const userData = docSnap.data();
+            const newListData = [...lists];
+            
+            for(const list of newListData) {
+                const animeIds = userData[list.value] || [];
+                if(animeIds.length > 0) {
+                    const animeData = await fetchAnimeDetails(animeIds);
+                    const listIndex = newListData.findIndex(l => l.value === list.value);
+                    if(listIndex !== -1) {
+                       newListData[listIndex].data = animeData;
+                    }
+                } else {
+                    const listIndex = newListData.findIndex(l => l.value === list.value);
+                     if(listIndex !== -1) {
+                       newListData[listIndex].data = [];
+                    }
+                }
+                const listIndex = newListData.findIndex(l => l.value === list.value);
+                if(listIndex !== -1) newListData[listIndex].isLoading = false;
+            }
+            setLists(newListData);
+        } else {
+             const newListData = [...lists];
+             for(const list of newListData) {
+                const listIndex = newListData.findIndex(l => l.value === list.value);
+                if(listIndex !== -1) {
+                    newListData[listIndex].data = [];
+                    newListData[listIndex].isLoading = false;
+                }
+             }
+             setLists(newListData);
+        }
+    });
+
+    return () => unsub();
+  }, [user]);
+
+  if (authLoading || !user) {
+    return (
+        <div className="flex justify-center items-center h-screen">
+            <Loader2 className="w-16 h-16 animate-spin text-primary" />
+        </div>
+    );
+  }
 
   const renderSkeleton = () => (
     <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 pt-8">

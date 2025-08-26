@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Search, Clapperboard, Tv, Film, Star, Sparkles, Loader2 } from "lucide-react";
+import { Search, Clapperboard, Tv, Film, Star, Sparkles, Loader2, LogOut, UserCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -11,14 +11,25 @@ import { useDebounce } from "@/hooks/use-debounce";
 import type { SearchResult } from "@/lib/types";
 import Image from "next/image";
 import { fetchZoro } from "@/lib/utils";
+import { useAuth } from "@/context/AuthContext";
+import { auth } from "@/lib/firebase";
+import { signOut } from "firebase/auth";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+
 
 const navLinks = [
   { href: "/", label: "Home" },
   { href: "/category/tv", label: "TV Shows" },
   { href: "/category/movie", label: "Movies" },
   { href: "/genres", label: "Genres" },
-  { href: "/my-list", label: "My List" },
-  { href: "/recommendations", label: "For You" },
 ];
 
 export function Header() {
@@ -29,12 +40,13 @@ export function Header() {
   const [isLoading, setIsLoading] = useState(false);
   const debouncedSearchQuery = useDebounce(searchQuery, 300);
   const searchInputRef = useRef<HTMLInputElement>(null);
+  const { user } = useAuth();
 
   useEffect(() => {
     const fetchSearch = async () => {
       if (debouncedSearchQuery) {
         setIsLoading(true);
-        const res = await fetchZoro(debouncedSearchQuery, { page: '1' });
+        const res = await fetchZoro(debouncedSearchQuery);
         setSearchResults(res.results?.slice(0, 5) || []);
         setIsPopoverOpen(true);
         setIsLoading(false);
@@ -62,10 +74,16 @@ export function Header() {
     searchInputRef.current?.blur();
   }
 
+  const handleLogout = async () => {
+    await signOut(auth);
+    router.push("/");
+  };
+
+
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <div className="container flex h-16 items-center space-x-4 sm:justify-between sm:space-x-0">
-        <div className="flex gap-6 md:gap-10">
+      <div className="container flex h-16 items-center">
+        <div className="mr-auto flex items-center gap-6">
           <Link href="/" className="flex items-center space-x-2">
             <Clapperboard className="h-6 w-6 text-primary" />
             <span className="inline-block font-bold font-headline text-lg">AniStream</span>
@@ -80,13 +98,21 @@ export function Header() {
                 {link.label}
               </Link>
             ))}
+             {user && (
+              <Link href="/my-list" className="flex items-center text-sm font-medium text-muted-foreground transition-colors hover:text-foreground">
+                My List
+              </Link>
+            )}
+             <Link href="/recommendations" className="flex items-center text-sm font-medium text-muted-foreground transition-colors hover:text-foreground">
+                For You
+              </Link>
           </nav>
         </div>
 
-        <div className="flex flex-1 items-center justify-end space-x-4">
+        <div className="flex items-center justify-end gap-4">
           <Popover open={isPopoverOpen} onOpenChange={setIsPopoverOpen}>
             <PopoverTrigger asChild>
-              <form onSubmit={handleSearchSubmit} className="relative w-full max-w-sm">
+              <form onSubmit={handleSearchSubmit} className="relative w-full max-w-xs">
                 <Input
                   ref={searchInputRef}
                   type="search"
@@ -139,6 +165,47 @@ export function Header() {
               )}
             </PopoverContent>
           </Popover>
+
+          {user ? (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" className="relative h-8 w-8 rounded-full">
+                  <Avatar className="h-8 w-8">
+                     <AvatarImage src={user.photoURL || undefined} alt={user.displayName || user.email || 'User'} />
+                    <AvatarFallback>
+                        <UserCircle />
+                    </AvatarFallback>
+                  </Avatar>
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent className="w-56" align="end" forceMount>
+                <DropdownMenuLabel className="font-normal">
+                  <div className="flex flex-col space-y-1">
+                    <p className="text-sm font-medium leading-none">
+                        {user.displayName || 'Welcome'}
+                    </p>
+                    <p className="text-xs leading-none text-muted-foreground">
+                      {user.email}
+                    </p>
+                  </div>
+                </DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={handleLogout}>
+                  <LogOut className="mr-2 h-4 w-4" />
+                  <span>Log out</span>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          ) : (
+            <div className="flex gap-2">
+                <Button asChild variant="outline">
+                    <Link href="/login">Login</Link>
+                </Button>
+                <Button asChild>
+                    <Link href="/signup">Sign Up</Link>
+                </Button>
+            </div>
+          )}
         </div>
       </div>
     </header>

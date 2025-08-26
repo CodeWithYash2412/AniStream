@@ -1,24 +1,150 @@
+
+"use client"
 import { fetchZoro } from "@/lib/utils";
 import { notFound } from "next/navigation";
 import Image from "next/image";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Star, Tv, Film, Play, ListVideo } from "lucide-react";
+import { Play, ListVideo, Plus, Check } from "lucide-react";
 import Link from "next/link";
 import { AnimeCard } from "@/components/anime/AnimeCard";
 import type { Anime, Episode } from "@/lib/types";
+import { useAuth } from "@/context/AuthContext";
+import { db } from "@/lib/firebase";
+import { doc, getDoc, updateDoc, setDoc, arrayUnion, arrayRemove } from "firebase/firestore";
+import { useState, useEffect, useCallback } from "react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+import { useToast } from "@/hooks/use-toast";
 
-export default async function AnimeDetailPage({ params }: { params: { id: string } }) {
-  const animeRes = await fetchZoro(`info`, { id: params.id });
-  const anime: Anime = animeRes;
 
-  if (!anime || !anime.id) {
-    notFound();
+async function getAnimeData(id: string) {
+    const animeRes = await fetchZoro(`info`, { id });
+    const recommendationsRes = await fetchZoro('most-popular');
+
+    return {
+        anime: animeRes,
+        recommendedAnime: recommendationsRes.results.slice(0, 5)
+    }
+}
+
+
+export default function AnimeDetailPage({ params }: { params: { id: string } }) {
+    const { user } = useAuth();
+    const { toast } = useToast();
+    const [anime, setAnime] = useState<Anime | null>(null);
+    const [recommendedAnime, setRecommendedAnime] = useState<Anime[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [isInList, setIsInList] = useState<string | false>(false);
+    const [listLoading, setListLoading] = useState(true);
+
+
+    const listTypes = [
+        { value: "watching", label: "Watching" },
+        { value: "completed", label: "Completed" },
+        { value: "on_hold", label: "On Hold" },
+        { value: "dropped", label: "Dropped" },
+    ];
+    
+    const checkUserList = useCallback(async () => {
+        if (!user) {
+            setListLoading(false);
+            return;
+        }
+        setListLoading(true);
+        const userDocRef = doc(db, "users", user.uid);
+        const userDoc = await getDoc(userDocRef);
+        if (userDoc.exists()) {
+            const userData = userDoc.data();
+            let foundInList = false;
+            for(const listType of listTypes) {
+                if (userData[listType.value] && userData[listType.value].includes(params.id)) {
+                    setIsInList(listType.value);
+                    foundInList = true;
+                    break;
+                }
+            }
+            if(!foundInList) setIsInList(false);
+        } else {
+            setIsInList(false);
+        }
+        setListLoading(false);
+    }, [user, params.id]);
+
+
+    useEffect(() => {
+        const fetchData = async () => {
+            setLoading(true);
+            const data = await getAnimeData(params.id);
+            if (!data.anime || !data.anime.id) {
+                notFound();
+            }
+            setAnime(data.anime);
+            setRecommendedAnime(data.recommendedAnime);
+            setLoading(false);
+        }
+        fetchData();
+    }, [params.id]);
+    
+    useEffect(() => {
+        checkUserList();
+    }, [checkUserList])
+
+
+    const handleListAction = async (list: string) => {
+        if (!user || !anime) {
+            toast({
+                variant: 'destructive',
+                title: "You must be logged in to add to a list."
+            })
+            return;
+        };
+
+        const userDocRef = doc(db, "users", user.uid);
+
+        try {
+             const userDoc = await getDoc(userDocRef);
+             const updateData: { [key: string]: any } = {};
+
+            if(isInList && isInList !== list) { // remove from old list
+                const oldListData = {[isInList]: arrayRemove(anime.id)};
+                await updateDoc(userDocRef, oldListData);
+            }
+
+            if(isInList === list) { // remove from list
+                updateData[list] = arrayRemove(anime.id);
+                 await updateDoc(userDocRef, updateData);
+                 setIsInList(false);
+                 toast({ title: `Removed from ${list}`});
+            } else { // add to list
+                updateData[list] = arrayUnion(anime.id);
+                if (userDoc.exists()) {
+                    await updateDoc(userDocRef, updateData);
+                } else {
+                    await setDoc(userDocRef, updateData);
+                }
+                setIsInList(list);
+                toast({ title: `Added to ${list}`});
+            }
+           
+        } catch (error) {
+            console.error("Error updating list: ", error);
+             toast({
+                variant: 'destructive',
+                title: "Failed to update list."
+            })
+        }
+    };
+
+
+  if (loading || !anime) {
+      return <div>Loading...</div>
   }
-
-  const recommendationsRes = await fetchZoro('most-popular');
-  const recommendedAnime = recommendationsRes.results.slice(0, 5);
 
   const episodes: Episode[] = anime.episodes || [];
 
@@ -60,10 +186,30 @@ export default async function AnimeDetailPage({ params }: { params: { id: string
                 Watch Episode 1
               </Link>
             </Button>
-            <Button variant="secondary" size="lg">
-              <ListVideo className="mr-2 h-5 w-5" />
-              Add to My List
-            </Button>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="secondary" size="lg" disabled={listLoading}>
+                   {isInList ? <Check className="mr-2 h-5 w-5" /> : <Plus className="mr-2 h-5 w-5" />}
+                    {isInList ? `In ${isInList}` : 'Add to List'}
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="start">
+                {listTypes.map(listType => (
+                    <DropdownMenuItem key={listType.value} onClick={() => handleListAction(listType.value)}>
+                        {listType.label}
+                    </DropdownMenuItem>
+                ))}
+                 {isInList && (
+                     <>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem className="text-red-500" onClick={() => handleListAction(isInList as string)}>
+                            Remove from List
+                        </DropdownMenuItem>
+                     </>
+                 )}
+              </DropdownMenuContent>
+            </DropdownMenu>
+
           </div>
         </div>
       </div>
@@ -77,7 +223,7 @@ export default async function AnimeDetailPage({ params }: { params: { id: string
                       <Card className="group overflow-hidden transition-all hover:border-primary hover:shadow-lg hover:-translate-y-1">
                           <CardContent className="p-0">
                               <div className="relative aspect-video">
-                                  <Image src={ep.image || anime.image} alt={ep.title || `Episode ${ep.number}`} layout="fill" className="object-cover" data-ai-hint="anime episode thumbnail" />
+                                  <Image src={ep.image || anime.image} alt={ep.title || `Episode ${ep.number}`} fill className="object-cover" data-ai-hint="anime episode thumbnail" />
                                   <div className="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
                                       <Play className="w-10 h-10 text-white"/>
                                   </div>
