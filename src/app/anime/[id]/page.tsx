@@ -12,13 +12,14 @@ import { AnimeCard } from "@/components/anime/AnimeCard";
 import type { Anime, Episode } from "@/lib/types";
 import { useAuth } from "@/context/AuthContext";
 import { db } from "@/lib/firebase";
-import { doc, getDoc, updateDoc, setDoc, arrayUnion, arrayRemove, DropdownMenuSeparator } from "firebase/firestore";
+import { doc, getDoc, updateDoc, setDoc, arrayUnion, arrayRemove } from "firebase/firestore";
 import { useState, useEffect, useCallback } from "react";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
+  DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu"
 import { useToast } from "@/hooks/use-toast";
 
@@ -251,5 +252,5 @@ export default function AnimeDetailPage({ params }: { params: { id: string } }) 
        )}
     </div>
   );
-
+}
     
