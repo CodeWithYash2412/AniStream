@@ -9,6 +9,7 @@ const firebaseConfig = {
   apiKey: "AIzaSyAwTQg4ZoJb5aDLCAoZRLQeu1yKt160YxA",
   authDomain: "anistream-z88tx.firebaseapp.com",
   messagingSenderId: "645190001140",
+  measurementId: "G-65YPS7T5G5"
 };
 
 // Initialize Firebase
