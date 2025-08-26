@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { use, useCallback, useEffect, useState } from "react";
@@ -7,7 +8,7 @@ import Image from "next/image";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Play, Plus, Check, ChevronLeft, ChevronRight } from "lucide-react";
+import { Play, Plus, Check, ChevronLeft, ChevronRight, Bookmark } from "lucide-react";
 import Link from "next/link";
 import { AnimeCard } from "@/components/anime/AnimeCard";
 import type { Anime, Episode } from "@/lib/types";
@@ -22,6 +23,8 @@ import {
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
 import { useToast } from "@/hooks/use-toast";
+import { Katana } from "@/components/shared/Icons";
+import { Clock, CheckCircle, XCircle } from "lucide-react";
 
 async function getAnimeData(id: string) {
   const animeRes = await fetchZoro(`info`, { id });
@@ -34,22 +37,15 @@ async function getAnimeData(id: string) {
 }
 
 const listTypes = [
-  { value: "watching", label: "Watching" },
-  { value: "completed", label: "Completed" },
-  { value: "on_hold", label: "On Hold" },
-  { value: "dropped", label: "Dropped" },
+    { value: "watching", label: "Watching", icon: Katana },
+    { value: "watch_later", label: "Watch Later", icon: Bookmark },
+    { value: "completed", label: "Completed", icon: CheckCircle },
+    { value: "on_hold", label: "On Hold", icon: Clock },
+    { value: "dropped", label: "Dropped", icon: XCircle },
 ];
 
-type ParamsPromise = Promise<{ id: string }>;
-
-interface AnimeDetailPageProps {
-  params: ParamsPromise;
-}
-
-export default function AnimeDetailPage({ params }: AnimeDetailPageProps) {
-  // Unwrap params promise using React.use()
-  const { id } = use(params);
-
+export default function AnimeDetailPage({ params }: { params: { id: string } }) {
+  const { id } = params;
   const { user } = useAuth();
   const { toast } = useToast();
   const [anime, setAnime] = useState<Anime | null>(null);
@@ -217,6 +213,7 @@ export default function AnimeDetailPage({ params }: AnimeDetailPageProps) {
               <DropdownMenuContent align="start">
                 {listTypes.map((listType) => (
                   <DropdownMenuItem key={listType.value} onClick={() => handleListAction(listType.value)}>
+                     <listType.icon className="mr-2 h-4 w-4" />
                     {listType.label}
                   </DropdownMenuItem>
                 ))}

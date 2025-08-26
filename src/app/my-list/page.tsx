@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useEffect } from 'react';
@@ -10,11 +11,12 @@ import { AnimeCard } from "@/components/anime/AnimeCard";
 import type { Anime } from "@/lib/types";
 import { Katana } from '@/components/shared/Icons';
 import { Skeleton } from '@/components/ui/skeleton';
-import { CheckCircle, Clock, XCircle, Loader2 } from 'lucide-react';
+import { CheckCircle, Clock, XCircle, Loader2, Bookmark } from 'lucide-react';
 import { fetchZoro } from '@/lib/utils';
 
 const initialLists = [
   { value: "watching", label: "Watching", icon: <Katana className="w-4 h-4" />, data: [] as Anime[], isLoading: true },
+  { value: "watch_later", label: "Watch Later", icon: <Bookmark className="w-4 h-4" />, data: [] as Anime[], isLoading: true },
   { value: "completed", label: "Completed", icon: <CheckCircle className="w-4 h-4" />, data: [] as Anime[], isLoading: true },
   { value: "on_hold", label: "On Hold", icon: <Clock className="w-4 h-4" />, data: [] as Anime[], isLoading: true },
   { value: "dropped", label: "Dropped", icon: <XCircle className="w-4 h-4" />, data: [] as Anime[], isLoading: true },
@@ -107,7 +109,7 @@ export default function MyListPage() {
     <div className="container mx-auto px-4 py-8">
       <h1 className="text-4xl font-headline font-bold mb-8">My Anime List</h1>
       <Tabs defaultValue="watching" className="w-full">
-        <TabsList className="grid w-full grid-cols-2 md:grid-cols-4 h-auto">
+        <TabsList className="grid w-full grid-cols-2 md:grid-cols-5 h-auto">
           {lists.map(list => (
             <TabsTrigger key={list.value} value={list.value} className="py-2 gap-2">
               {list.icon}
