@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Search, Clapperboard, Tv, Film, Star, Sparkles, Loader2, LogOut, UserCircle } from "lucide-react";
+import { Search, Clapperboard, Tv, Film, Star, Sparkles, Loader2, LogOut, UserCircle, Menu } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -23,6 +23,8 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { Separator } from "../ui/separator";
 
 
 const navLinks = [
@@ -37,6 +39,7 @@ export function Header() {
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
   const [isPopoverOpen, setIsPopoverOpen] = useState(false);
+  const [isSheetOpen, setIsSheetOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const debouncedSearchQuery = useDebounce(searchQuery, 300);
   const searchInputRef = useRef<HTMLInputElement>(null);
@@ -64,6 +67,7 @@ export function Header() {
       router.push(`/search?q=${encodeURIComponent(searchQuery.trim())}`);
       setSearchQuery("");
       setIsPopoverOpen(false);
+      setIsSheetOpen(false);
       searchInputRef.current?.blur();
     }
   };
@@ -71,48 +75,84 @@ export function Header() {
   const handleSuggestionClick = () => {
     setSearchQuery("");
     setIsPopoverOpen(false);
+    setIsSheetOpen(false);
     searchInputRef.current?.blur();
+  }
+  
+  const handleNavLinkClick = () => {
+    setIsSheetOpen(false);
   }
 
   const handleLogout = async () => {
     await signOut(auth);
     router.push("/");
+    setIsSheetOpen(false);
   };
 
+
+  const renderNavLinks = (isMobile = false) => (
+      <nav className={isMobile ? "flex flex-col gap-4 text-lg" : "hidden gap-6 md:flex"}>
+        {navLinks.map((link) => (
+          <Link
+            key={link.href}
+            href={link.href}
+            onClick={handleNavLinkClick}
+            className="flex items-center text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+          >
+            {link.label}
+          </Link>
+        ))}
+         {user && (
+          <Link href="/my-list" onClick={handleNavLinkClick} className="flex items-center text-sm font-medium text-muted-foreground transition-colors hover:text-foreground">
+            My List
+          </Link>
+        )}
+         <Link href="/recommendations" onClick={handleNavLinkClick} className="flex items-center text-sm font-medium text-muted-foreground transition-colors hover:text-foreground">
+            For You
+          </Link>
+      </nav>
+  )
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container flex h-16 items-center">
-        <div className="mr-auto flex items-center gap-6">
-          <Link href="/" className="flex items-center space-x-2">
+        <div className="mr-auto flex items-center gap-4">
+          <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
+            <SheetTrigger asChild>
+               <Button variant="ghost" size="icon" className="md:hidden">
+                <Menu className="h-6 w-6" />
+                <span className="sr-only">Toggle Menu</span>
+              </Button>
+            </SheetTrigger>
+             <SheetContent side="left" className="w-full sm:w-80">
+                <div className="flex flex-col h-full">
+                    <div className="p-4">
+                        <Link href="/" onClick={handleNavLinkClick} className="flex items-center space-x-2">
+                            <Clapperboard className="h-6 w-6 text-primary" />
+                            <span className="inline-block font-bold font-headline text-lg">AniStream</span>
+                        </Link>
+                    </div>
+                    <Separator/>
+                    <div className="p-4 flex-1">
+                        {renderNavLinks(true)}
+                    </div>
+                </div>
+            </SheetContent>
+          </Sheet>
+
+          <Link href="/" className="hidden md:flex items-center space-x-2">
             <Clapperboard className="h-6 w-6 text-primary" />
             <span className="inline-block font-bold font-headline text-lg">AniStream</span>
           </Link>
-          <nav className="hidden gap-6 md:flex">
-            {navLinks.map((link) => (
-              <Link
-                key={link.href}
-                href={link.href}
-                className="flex items-center text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
-              >
-                {link.label}
-              </Link>
-            ))}
-             {user && (
-              <Link href="/my-list" className="flex items-center text-sm font-medium text-muted-foreground transition-colors hover:text-foreground">
-                My List
-              </Link>
-            )}
-             <Link href="/recommendations" className="flex items-center text-sm font-medium text-muted-foreground transition-colors hover:text-foreground">
-                For You
-              </Link>
-          </nav>
+          <div className="hidden md:block">
+            {renderNavLinks()}
+          </div>
         </div>
 
-        <div className="flex items-center justify-end gap-4">
+        <div className="flex flex-1 items-center justify-end gap-4 md:flex-grow-0">
           <Popover open={isPopoverOpen} onOpenChange={setIsPopoverOpen}>
             <PopoverTrigger asChild>
-              <form onSubmit={handleSearchSubmit} className="relative w-full max-w-xs">
+              <form onSubmit={handleSearchSubmit} className="relative w-full max-w-sm">
                 <Input
                   ref={searchInputRef}
                   type="search"
@@ -197,7 +237,7 @@ export function Header() {
               </DropdownMenuContent>
             </DropdownMenu>
           ) : (
-            <div className="flex gap-2">
+            <div className="hidden sm:flex gap-2">
                 <Button asChild variant="outline">
                     <Link href="/login">Login</Link>
                 </Button>
