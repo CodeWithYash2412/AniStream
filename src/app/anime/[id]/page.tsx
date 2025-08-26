@@ -35,8 +35,7 @@ async function getAnimeData(id: string) {
 }
 
 
-export default function AnimeDetailPage({ params }: { params: { id: string } }) {
-    const { id } = params;
+export default function AnimeDetailPage({ params: { id } }: { params: { id: string } }) {
     const { user } = useAuth();
     const { toast } = useToast();
     const [anime, setAnime] = useState<Anime | null>(null);
