@@ -1,4 +1,3 @@
-
 "use client";
 
 import React, { use, useCallback, useEffect, useState } from "react";
@@ -37,15 +36,23 @@ async function getAnimeData(id: string) {
 }
 
 const listTypes = [
-    { value: "watching", label: "Watching", icon: Katana },
-    { value: "watch_later", label: "Watch Later", icon: Bookmark },
-    { value: "completed", label: "Completed", icon: CheckCircle },
-    { value: "on_hold", label: "On Hold", icon: Clock },
-    { value: "dropped", label: "Dropped", icon: XCircle },
+  { value: "watching", label: "Watching", icon: Katana },
+  { value: "watch_later", label: "Watch Later", icon: Bookmark },
+  { value: "completed", label: "Completed", icon: CheckCircle },
+  { value: "on_hold", label: "On Hold", icon: Clock },
+  { value: "dropped", label: "Dropped", icon: XCircle },
 ];
 
-export default function AnimeDetailPage({ params }: { params: { id: string } }) {
-  const { id } = params;
+type ParamsPromise = Promise<{ id: string }>;
+
+interface AnimeDetailPageProps {
+  params: ParamsPromise;
+}
+
+export default function AnimeDetailPage({ params }: AnimeDetailPageProps) {
+  // Unwrap params promise using React.use()
+  const { id } = use(params);
+  
   const { user } = useAuth();
   const { toast } = useToast();
   const [anime, setAnime] = useState<Anime | null>(null);
@@ -164,7 +171,6 @@ export default function AnimeDetailPage({ params }: { params: { id: string } }) 
     }
   };
 
-
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="flex flex-col md:flex-row gap-8">
@@ -213,7 +219,7 @@ export default function AnimeDetailPage({ params }: { params: { id: string } }) 
               <DropdownMenuContent align="start">
                 {listTypes.map((listType) => (
                   <DropdownMenuItem key={listType.value} onClick={() => handleListAction(listType.value)}>
-                     <listType.icon className="mr-2 h-4 w-4" />
+                    <listType.icon className="mr-2 h-4 w-4" />
                     {listType.label}
                   </DropdownMenuItem>
                 ))}
@@ -235,16 +241,16 @@ export default function AnimeDetailPage({ params }: { params: { id: string } }) 
         <div className="mt-12">
           <div className="flex justify-between items-center mb-6">
             <h2 className="text-3xl font-headline font-bold">Episodes</h2>
-             {totalPages > 1 && (
-                <div className="flex items-center gap-2">
-                    <Button variant="outline" size="icon" onClick={() => paginate(currentPage - 1)} disabled={currentPage === 1}>
-                        <ChevronLeft className="h-4 w-4" />
-                    </Button>
-                    <span className="text-sm text-muted-foreground">Page {currentPage} of {totalPages}</span>
-                    <Button variant="outline" size="icon" onClick={() => paginate(currentPage + 1)} disabled={currentPage === totalPages}>
-                        <ChevronRight className="h-4 w-4" />
-                    </Button>
-                </div>
+            {totalPages > 1 && (
+              <div className="flex items-center gap-2">
+                <Button variant="outline" size="icon" onClick={() => paginate(currentPage - 1)} disabled={currentPage === 1}>
+                  <ChevronLeft className="h-4 w-4" />
+                </Button>
+                <span className="text-sm text-muted-foreground">Page {currentPage} of {totalPages}</span>
+                <Button variant="outline" size="icon" onClick={() => paginate(currentPage + 1)} disabled={currentPage === totalPages}>
+                  <ChevronRight className="h-4 w-4" />
+                </Button>
+              </div>
             )}
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
@@ -274,17 +280,17 @@ export default function AnimeDetailPage({ params }: { params: { id: string } }) 
               </Link>
             ))}
           </div>
-            {totalPages > 1 && (
-                <div className="flex justify-center items-center gap-2 mt-6">
-                    <Button variant="outline" onClick={() => paginate(currentPage - 1)} disabled={currentPage === 1}>
-                        <ChevronLeft className="mr-2 h-4 w-4" /> Previous
-                    </Button>
-                    <span className="text-sm text-muted-foreground">Page {currentPage} of {totalPages}</span>
-                    <Button variant="outline" onClick={() => paginate(currentPage + 1)} disabled={currentPage === totalPages}>
-                        Next <ChevronRight className="ml-2 h-4 w-4" />
-                    </Button>
-                </div>
-            )}
+          {totalPages > 1 && (
+            <div className="flex justify-center items-center gap-2 mt-6">
+              <Button variant="outline" onClick={() => paginate(currentPage - 1)} disabled={currentPage === 1}>
+                <ChevronLeft className="mr-2 h-4 w-4" /> Previous
+              </Button>
+              <span className="text-sm text-muted-foreground">Page {currentPage} of {totalPages}</span>
+              <Button variant="outline" onClick={() => paginate(currentPage + 1)} disabled={currentPage === totalPages}>
+                Next <ChevronRight className="ml-2 h-4 w-4" />
+              </Button>
+            </div>
+          )}
         </div>
       )}
 
