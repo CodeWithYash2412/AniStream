@@ -22,7 +22,7 @@ export function AnimeCarousel({ title, animeList, viewAllHref }: AnimeCarouselPr
   }
 
   return (
-    <section className="container">
+    <section>
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-2xl font-headline font-bold">{title}</h2>
         {viewAllHref && (

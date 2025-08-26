@@ -23,7 +23,7 @@ export default async function Home() {
 
   return (
     <div className="flex flex-col">
-      {heroAnime && (
+      {heroAnime && heroAnime.cover && (
         <section className="relative w-full h-[50vh] md:h-[80vh] text-white">
           <div className="absolute inset-0 bg-gradient-to-t from-background via-background/70 to-transparent z-10" />
           <div className="absolute inset-0 bg-gradient-to-r from-background via-transparent to-transparent z-10" />
@@ -35,7 +35,7 @@ export default async function Home() {
             data-ai-hint="anime hero background"
             priority
           />
-          <div className="relative z-20 flex flex-col justify-end h-full p-4 md:p-8 lg:p-12">
+          <div className="relative container mx-auto z-20 flex flex-col justify-end h-full p-4 md:p-8 lg:p-12">
             <div className="max-w-xl">
               <h1 className="text-4xl md:text-6xl font-headline font-extrabold text-shadow-lg tracking-tight">
                 {heroAnime.title}
@@ -61,7 +61,7 @@ export default async function Home() {
         </section>
       )}
       
-      <div className="space-y-12 py-12">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 space-y-12 py-12">
         <AnimeCarousel title="Top Airing" animeList={topAiring} />
         <AnimeCarousel title="Most Popular" animeList={mostPopular} />
         <AnimeCarousel title="Most Favorite" animeList={mostFavorite} />
