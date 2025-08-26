@@ -44,9 +44,9 @@ export default async function Home() {
                     <div className="relative w-full h-[50vh] md:h-[80vh] text-white">
                         <div className="absolute inset-0 bg-gradient-to-t from-background via-background/70 to-transparent z-10" />
                         <div className="absolute inset-0 bg-gradient-to-r from-background via-transparent to-transparent z-10" />
-                        {heroAnime.cover && 
+                        {heroAnime.image && 
                           <Image
-                            src={heroAnime.cover}
+                            src={heroAnime.image}
                             alt={heroAnime.title}
                             fill
                             className="object-cover"
