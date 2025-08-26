@@ -11,10 +11,10 @@ interface AnimeCardProps {
 
 export function AnimeCard({ anime, className }: AnimeCardProps) {
   return (
-    <Link href={`/anime/${anime.id}`} className={cn("group block relative", className)}>
+    <Link href={`/anime/${anime.mal_id}`} className={cn("group block relative", className)}>
       <div className="aspect-[2/3] w-full overflow-hidden rounded-lg bg-card shadow-lg transition-transform duration-300 ease-in-out group-hover:scale-105">
         <Image
-          src={anime.poster}
+          src={anime.images.jpg.large_image_url}
           alt={anime.title}
           width={400}
           height={600}

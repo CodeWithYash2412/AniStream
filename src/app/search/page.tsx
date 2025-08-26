@@ -1,17 +1,19 @@
 import { AnimeCard } from "@/components/anime/AnimeCard";
-import { mockAnime } from "@/lib/mock-data";
+import { fetchJikan } from "@/lib/utils";
+import type { Anime } from "@/lib/types";
 
-export default function SearchPage({
+export default async function SearchPage({
   searchParams,
 }: {
   searchParams?: { [key: string]: string | string[] | undefined };
 }) {
   const query = (searchParams?.q as string) || "";
-  const filteredAnime = query
-    ? mockAnime.filter((anime) =>
-        anime.title.toLowerCase().includes(query.toLowerCase())
-      )
-    : [];
+  let filteredAnime: Anime[] = [];
+
+  if (query) {
+    const res = await fetchJikan('anime', { q: query, limit: '24' });
+    filteredAnime = res.data;
+  }
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -29,7 +31,7 @@ export default function SearchPage({
       {filteredAnime.length > 0 ? (
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
           {filteredAnime.map((anime) => (
-            <AnimeCard key={anime.id} anime={anime} />
+            <AnimeCard key={anime.mal_id} anime={anime} />
           ))}
         </div>
       ) : (
