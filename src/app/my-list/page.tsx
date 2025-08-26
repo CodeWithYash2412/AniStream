@@ -13,15 +13,17 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { CheckCircle, Clock, XCircle, Loader2 } from 'lucide-react';
 import { fetchZoro } from '@/lib/utils';
 
+const initialLists = [
+  { value: "watching", label: "Watching", icon: <Katana className="w-4 h-4" />, data: [] as Anime[], isLoading: true },
+  { value: "completed", label: "Completed", icon: <CheckCircle className="w-4 h-4" />, data: [] as Anime[], isLoading: true },
+  { value: "on_hold", label: "On Hold", icon: <Clock className="w-4 h-4" />, data: [] as Anime[], isLoading: true },
+  { value: "dropped", label: "Dropped", icon: <XCircle className="w-4 h-4" />, data: [] as Anime[], isLoading: true },
+];
+
 export default function MyListPage() {
   const { user, loading: authLoading } = useAuth();
   const router = useRouter();
-  const [lists, setLists] = useState([
-    { value: "watching", label: "Watching", icon: <Katana className="w-4 h-4" />, data: [] as Anime[], isLoading: true },
-    { value: "completed", label: "Completed", icon: <CheckCircle className="w-4 h-4" />, data: [] as Anime[], isLoading: true },
-    { value: "on_hold", label: "On Hold", icon: <Clock className="w-4 h-4" />, data: [] as Anime[], isLoading: true },
-    { value: "dropped", label: "Dropped", icon: <XCircle className="w-4 h-4" />, data: [] as Anime[], isLoading: true },
-  ]);
+  const [lists, setLists] = useState(initialLists);
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -39,43 +41,47 @@ export default function MyListPage() {
     }
     
     const unsub = onSnapshot(doc(db, 'users', user.uid), async (docSnap) => {
-        if (docSnap.exists()) {
-            const userData = docSnap.data();
-            const newListData = [...lists];
+        const userData = docSnap.exists() ? docSnap.data() : {};
+        
+        setLists(prevLists => {
+          const newLists = [...prevLists];
+          let listsChanged = false;
+
+          const updatePromises = newLists.map(async (list, index) => {
+            const animeIds = userData[list.value] || [];
+            let currentData = newLists[index].data;
+            let currentLoading = newLists[index].isLoading;
             
-            for(const list of newListData) {
-                const animeIds = userData[list.value] || [];
-                if(animeIds.length > 0) {
-                    const animeData = await fetchAnimeDetails(animeIds);
-                    const listIndex = newListData.findIndex(l => l.value === list.value);
-                    if(listIndex !== -1) {
-                       newListData[listIndex].data = animeData;
-                    }
-                } else {
-                    const listIndex = newListData.findIndex(l => l.value === list.value);
-                     if(listIndex !== -1) {
-                       newListData[listIndex].data = [];
-                    }
-                }
-                const listIndex = newListData.findIndex(l => l.value === list.value);
-                if(listIndex !== -1) newListData[listIndex].isLoading = false;
+            if (animeIds.length > 0) {
+              const animeData = await fetchAnimeDetails(animeIds);
+              if (JSON.stringify(currentData) !== JSON.stringify(animeData)) {
+                currentData = animeData;
+                listsChanged = true;
+              }
+            } else if (currentData.length > 0) {
+              currentData = [];
+              listsChanged = true;
             }
-            setLists(newListData);
-        } else {
-             const newListData = [...lists];
-             for(const list of newListData) {
-                const listIndex = newListData.findIndex(l => l.value === list.value);
-                if(listIndex !== -1) {
-                    newListData[listIndex].data = [];
-                    newListData[listIndex].isLoading = false;
-                }
-             }
-             setLists(newListData);
-        }
+            
+            if (currentLoading) {
+              currentLoading = false;
+              listsChanged = true;
+            }
+
+            newLists[index] = { ...list, data: currentData, isLoading: currentLoading };
+          });
+          
+          Promise.all(updatePromises).then(() => {
+              if (listsChanged) {
+                  setLists([...newLists]);
+              }
+          });
+          
+          return prevLists; // Return previous state while async operations run
+        });
     });
 
     return () => unsub();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user]);
 
   if (authLoading || !user) {

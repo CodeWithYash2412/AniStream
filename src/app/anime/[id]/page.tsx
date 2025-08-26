@@ -35,6 +35,12 @@ async function getAnimeData(id: string) {
     }
 }
 
+const listTypes = [
+    { value: "watching", label: "Watching" },
+    { value: "completed", label: "Completed" },
+    { value: "on_hold", label: "On Hold" },
+    { value: "dropped", label: "Dropped" },
+];
 
 export default function AnimeDetailPage({ params }: { params: { id: string } }) {
   const { id } = params;  
@@ -46,14 +52,6 @@ export default function AnimeDetailPage({ params }: { params: { id: string } }) 
     const [isInList, setIsInList] = useState<string | false>(false);
     const [listLoading, setListLoading] = useState(true);
 
-
-    const listTypes = [
-        { value: "watching", label: "Watching" },
-        { value: "completed", label: "Completed" },
-        { value: "on_hold", label: "On Hold" },
-        { value: "dropped", label: "Dropped" },
-    ];
-    
     const checkUserList = useCallback(async () => {
         if (!user) {
             setListLoading(false);
@@ -77,7 +75,7 @@ export default function AnimeDetailPage({ params }: { params: { id: string } }) 
             setIsInList(false);
         }
         setListLoading(false);
-    }, [user, id, listTypes]);
+    }, [user, id]);
 
 
     useEffect(() => {
