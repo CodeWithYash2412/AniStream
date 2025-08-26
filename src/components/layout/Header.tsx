@@ -24,7 +24,6 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
-import { Separator } from "../ui/separator";
 
 
 const navLinks = [
@@ -116,8 +115,8 @@ export function Header() {
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <div className="container flex h-16 items-center justify-between">
-        <div className="flex items-center gap-2">
+      <div className="container flex h-16 items-center">
+        <div className="flex-1 flex items-center justify-start gap-2">
             <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
                 <SheetTrigger asChild>
                    <Button variant="ghost" size="icon" className="md:hidden">
@@ -145,11 +144,11 @@ export function Header() {
             </Link>
         </div>
 
-        <div className="hidden md:flex justify-center">
+        <div className="flex-1 hidden md:flex justify-center">
             {renderNavLinks()}
         </div>
 
-        <div className="flex items-center justify-end gap-2 md:w-[210px]">
+        <div className="flex-1 flex items-center justify-end gap-2">
           <Popover open={isPopoverOpen} onOpenChange={setIsPopoverOpen}>
             <PopoverTrigger asChild>
               <form onSubmit={handleSearchSubmit} className="relative w-full max-w-sm hidden sm:block">
