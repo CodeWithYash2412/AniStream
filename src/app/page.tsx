@@ -3,23 +3,23 @@ import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import Image from "next/image";
 import { PlayCircle } from "lucide-react";
-import { fetchJikan } from "@/lib/utils";
+import { fetchZoro } from "@/lib/utils";
 import type { Anime } from "@/lib/types";
 
 export default async function Home() {
-  const topAnimeRes = await fetchJikan('top/anime', { filter: 'bypopularity', limit: '15' });
-  const trendingAnime: Anime[] = topAnimeRes.data;
+  const topAiringRes = await fetchZoro('top-airing');
+  const topAiring: Anime[] = topAiringRes.results;
 
-  const topAiringRes = await fetchJikan('top/anime', { filter: 'airing', limit: '15' });
-  const topAiring: Anime[] = topAiringRes.data;
+  const popularMoviesRes = await fetchZoro('movies');
+  const popularMovies: Anime[] = popularMoviesRes.results;
+
+  const mostPopularRes = await fetchZoro('most-popular');
+  const mostPopular: Anime[] = mostPopularRes.results;
   
-  const upcomingRes = await fetchJikan('top/anime', { filter: 'upcoming', limit: '15' });
-  const upcoming: Anime[] = upcomingRes.data;
+  const mostFavoriteRes = await fetchZoro('most-favorite');
+  const mostFavorite: Anime[] = mostFavoriteRes.results;
 
-  const popularMoviesRes = await fetchJikan('top/anime', { filter: 'bypopularity', type: 'movie', limit: '15' });
-  const popularMovies: Anime[] = popularMoviesRes.data;
-
-  const heroAnime = trendingAnime[0];
+  const heroAnime = topAiring[0];
 
   return (
     <div className="flex flex-col">
@@ -28,7 +28,7 @@ export default async function Home() {
           <div className="absolute inset-0 bg-gradient-to-t from-background via-background/70 to-transparent z-10" />
           <div className="absolute inset-0 bg-gradient-to-r from-background via-transparent to-transparent z-10" />
           <Image
-            src={heroAnime.images.jpg.large_image_url}
+            src={heroAnime.cover}
             alt={heroAnime.title}
             fill
             className="object-cover"
@@ -41,17 +41,17 @@ export default async function Home() {
                 {heroAnime.title}
               </h1>
               <p className="mt-4 text-sm md:text-base line-clamp-3 text-secondary-foreground/80">
-                {heroAnime.synopsis}
+                {heroAnime.description}
               </p>
               <div className="mt-6 flex gap-4">
                 <Button asChild size="lg" className="bg-primary hover:bg-primary/90">
-                  <Link href={`/anime/${heroAnime.mal_id}`}>
+                  <Link href={`/anime/${heroAnime.id}`}>
                     <PlayCircle className="mr-2 h-6 w-6" />
                     Watch Now
                   </Link>
                 </Button>
                 <Button asChild size="lg" variant="secondary" className="bg-card/80 backdrop-blur-sm hover:bg-card">
-                  <Link href={`/anime/${heroAnime.mal_id}`}>
+                  <Link href={`/anime/${heroAnime.id}`}>
                     More Info
                   </Link>
                 </Button>
@@ -62,9 +62,9 @@ export default async function Home() {
       )}
       
       <div className="space-y-12 py-12">
-        <AnimeCarousel title="Trending Now" animeList={trendingAnime} />
         <AnimeCarousel title="Top Airing" animeList={topAiring} />
-        <AnimeCarousel title="Upcoming" animeList={upcoming} />
+        <AnimeCarousel title="Most Popular" animeList={mostPopular} />
+        <AnimeCarousel title="Most Favorite" animeList={mostFavorite} />
         <AnimeCarousel title="Popular Movies" animeList={popularMovies} />
       </div>
     </div>

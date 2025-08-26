@@ -12,7 +12,7 @@ import { ArrowRight } from "lucide-react";
 
 interface AnimeCarouselProps {
   title: string;
-  animeList: Anime[];
+  animeList: any[];
   viewAllHref?: string;
 }
 
@@ -39,7 +39,7 @@ export function AnimeCarousel({ title, animeList, viewAllHref }: AnimeCarouselPr
       >
         <CarouselContent className="-ml-4">
           {animeList.map((anime) => (
-            <CarouselItem key={anime.mal_id} className="pl-4 basis-1/2 sm:basis-1/3 md:basis-1/4 lg:basis-1/5 xl:basis-1/6">
+            <CarouselItem key={anime.id} className="pl-4 basis-1/2 sm:basis-1/3 md:basis-1/4 lg:basis-1/5 xl:basis-1/6">
               <AnimeCard anime={anime} />
             </CarouselItem>
           ))}

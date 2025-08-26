@@ -5,18 +5,22 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
 }
 
-export async function fetchJikan(endpoint: string, params: Record<string, string> = {}) {
+export async function fetchZoro(endpoint: string, params: Record<string, string> = {}) {
     const searchParams = new URLSearchParams(params);
-    const url = `https://api.jikan.moe/v4/${endpoint}?${searchParams.toString()}`;
+    let url = `https://animeapi-six.vercel.app/anime/zoro/${endpoint}`;
+    if (Object.keys(params).length > 0) {
+      url += `?${searchParams.toString()}`;
+    }
+
     try {
         const response = await fetch(url);
         if (!response.ok) {
-            console.error(`Jikan API request failed for ${url} with status ${response.status}`);
-            return { data: [] }; // Return empty data on failure
+            console.error(`Zoro API request failed for ${url} with status ${response.status}`);
+            return { results: [], animes: [] }; // Return empty on failure
         }
         return await response.json();
     } catch (error) {
-        console.error(`Failed to fetch from Jikan API: ${error}`);
-        return { data: [] }; // Return empty data on error
+        console.error(`Failed to fetch from Zoro API: ${error}`);
+        return { results: [], animes: [] }; // Return empty on error
     }
 }

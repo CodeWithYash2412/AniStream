@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { AnimeCard } from "@/components/anime/AnimeCard";
-import { fetchJikan } from "@/lib/utils";
+import { fetchZoro } from "@/lib/utils";
 import type { Anime } from "@/lib/types";
 import { Eye, CheckCircle, Clock, XCircle, Star } from 'lucide-react';
 import { Katana } from '@/components/shared/Icons';
@@ -20,21 +20,21 @@ export default function MyListPage() {
   useEffect(() => {
     const fetchLists = async () => {
       // In a real app, this would fetch user-specific lists.
-      // For this demo, we'll fetch top anime for each category.
+      // For this demo, we'll fetch data for each category.
       const listPromises = [
-        fetchJikan('top/anime', { filter: 'airing', limit: '6' }),
-        fetchJikan('top/anime', { filter: 'bypopularity', limit: '12' }),
-        fetchJikan('top/anime', { filter: 'favorite', limit: '4' }),
-        fetchJikan('anime', { status: 'upcoming', sort: 'desc', order_by: 'favorites', limit: '2' })
+        fetchZoro('top-airing'),
+        fetchZoro('latest-completed'),
+        fetchZoro('most-favorite'),
+        fetchZoro('most-popular')
       ];
       
       const [watchingRes, completedRes, onHoldRes, droppedRes] = await Promise.all(listPromises);
 
       setLists([
-        { value: "watching", label: "Watching", icon: <Katana className="w-4 h-4" />, data: watchingRes.data, isLoading: false },
-        { value: "completed", label: "Completed", icon: <CheckCircle className="w-4 h-4" />, data: completedRes.data, isLoading: false },
-        { value: "on_hold", label: "On Hold", icon: <Clock className="w-4 h-4" />, data: onHoldRes.data, isLoading: false },
-        { value: "dropped", label: "Dropped", icon: <XCircle className="w-4 h-4" />, data: droppedRes.data, isLoading: false },
+        { value: "watching", label: "Watching", icon: <Katana className="w-4 h-4" />, data: watchingRes.results.slice(0,6), isLoading: false },
+        { value: "completed", label: "Completed", icon: <CheckCircle className="w-4 h-4" />, data: completedRes.results.slice(0,12), isLoading: false },
+        { value: "on_hold", label: "On Hold", icon: <Clock className="w-4 h-4" />, data: onHoldRes.results.slice(0,4), isLoading: false },
+        { value: "dropped", label: "Dropped", icon: <XCircle className="w-4 h-4" />, data: droppedRes.results.slice(0,2), isLoading: false },
       ]);
     }
     fetchLists();
@@ -69,7 +69,7 @@ export default function MyListPage() {
               {list.isLoading ? renderSkeleton() : (
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 pt-8">
                 {list.data.length > 0 ? (
-                    list.data.map(anime => <AnimeCard key={anime.mal_id} anime={anime} />)
+                    list.data.map(anime => <AnimeCard key={anime.id} anime={anime} />)
                 ) : (
                     <div className="col-span-full text-center text-muted-foreground py-16">
                     <p>No anime in this list yet.</p>

@@ -24,7 +24,13 @@ const nextConfig: NextConfig = {
       },
       {
         protocol: 'https',
-        hostname: 'cdn.myanimelist.net',
+        hostname: 'img.flawlessfiles.com',
+        port: '',
+        pathname: '/**',
+      },
+       {
+        protocol: 'https',
+        hostname: 's4.anilist.co',
         port: '',
         pathname: '/**',
       },

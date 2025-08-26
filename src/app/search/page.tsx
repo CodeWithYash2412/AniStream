@@ -1,6 +1,6 @@
 import { AnimeCard } from "@/components/anime/AnimeCard";
-import { fetchJikan } from "@/lib/utils";
-import type { Anime } from "@/lib/types";
+import { fetchZoro } from "@/lib/utils";
+import type { SearchResult } from "@/lib/types";
 
 export default async function SearchPage({
   searchParams,
@@ -8,11 +8,11 @@ export default async function SearchPage({
   searchParams?: { [key: string]: string | string[] | undefined };
 }) {
   const query = (searchParams?.q as string) || "";
-  let filteredAnime: Anime[] = [];
+  let filteredAnime: SearchResult[] = [];
 
   if (query) {
-    const res = await fetchJikan('anime', { q: query, limit: '24' });
-    filteredAnime = res.data;
+    const res = await fetchZoro(query);
+    filteredAnime = res.results;
   }
 
   return (
@@ -31,7 +31,7 @@ export default async function SearchPage({
       {filteredAnime.length > 0 ? (
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
           {filteredAnime.map((anime) => (
-            <AnimeCard key={anime.mal_id} anime={anime} />
+            <AnimeCard key={anime.id} anime={anime} />
           ))}
         </div>
       ) : (

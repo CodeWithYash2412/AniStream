@@ -8,9 +8,9 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { useDebounce } from "@/hooks/use-debounce";
-import type { Anime } from "@/lib/types";
+import type { SearchResult } from "@/lib/types";
 import Image from "next/image";
-import { fetchJikan } from "@/lib/utils";
+import { fetchZoro } from "@/lib/utils";
 
 const navLinks = [
   { href: "/", label: "Home" },
@@ -24,7 +24,7 @@ const navLinks = [
 export function Header() {
   const router = useRouter();
   const [searchQuery, setSearchQuery] = useState("");
-  const [searchResults, setSearchResults] = useState<Anime[]>([]);
+  const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
   const [isPopoverOpen, setIsPopoverOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const debouncedSearchQuery = useDebounce(searchQuery, 300);
@@ -34,8 +34,8 @@ export function Header() {
     const fetchSearch = async () => {
       if (debouncedSearchQuery) {
         setIsLoading(true);
-        const res = await fetchJikan('anime', { q: debouncedSearchQuery, limit: '5' });
-        setSearchResults(res.data || []);
+        const res = await fetchZoro(debouncedSearchQuery, { page: '1' });
+        setSearchResults(res.results?.slice(0, 5) || []);
         setIsPopoverOpen(true);
         setIsLoading(false);
       } else {
@@ -106,14 +106,14 @@ export function Header() {
                   <div className="py-2 text-sm text-muted-foreground text-center">Top Results</div>
                   <ul className="space-y-1 p-1">
                     {searchResults.map((anime) => (
-                      <li key={anime.mal_id}>
-                        <Link href={`/anime/${anime.mal_id}`} onClick={handleSuggestionClick} className="block">
+                      <li key={anime.id}>
+                        <Link href={`/anime/${anime.id}`} onClick={handleSuggestionClick} className="block">
                           <Button
                             variant="ghost"
                             className="w-full h-auto justify-start p-2"
                           >
                             <Image
-                              src={anime.images.jpg.image_url}
+                              src={anime.image}
                               alt={anime.title}
                               width={40}
                               height={60}
