@@ -23,7 +23,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { Separator } from "../ui/separator";
 
 
@@ -124,18 +124,17 @@ export function Header() {
                 <span className="sr-only">Toggle Menu</span>
               </Button>
             </SheetTrigger>
-             <SheetContent side="left" className="w-full sm:w-80">
-                <div className="flex flex-col h-full">
-                    <div className="p-4">
-                        <Link href="/" onClick={handleNavLinkClick} className="flex items-center space-x-2">
-                            <Clapperboard className="h-6 w-6 text-primary" />
-                            <span className="inline-block font-bold font-headline text-lg">AniStream</span>
-                        </Link>
-                    </div>
-                    <Separator/>
-                    <div className="p-4 flex-1">
-                        {renderNavLinks(true)}
-                    </div>
+             <SheetContent side="left" className="w-full sm:w-80 p-0">
+                <SheetHeader className="p-4">
+                    <SheetTitle className="sr-only">Menu</SheetTitle>
+                    <Link href="/" onClick={handleNavLinkClick} className="flex items-center space-x-2">
+                        <Clapperboard className="h-6 w-6 text-primary" />
+                        <span className="inline-block font-bold font-headline text-lg">AniStream</span>
+                    </Link>
+                </SheetHeader>
+                <Separator/>
+                <div className="p-4 flex-1">
+                    {renderNavLinks(true)}
                 </div>
             </SheetContent>
           </Sheet>
