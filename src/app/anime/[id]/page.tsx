@@ -5,14 +5,14 @@ import { notFound } from "next/navigation";
 import Image from "next/image";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Play, ListVideo, Plus, Check } from "lucide-react";
 import Link from "next/link";
 import { AnimeCard } from "@/components/anime/AnimeCard";
 import type { Anime, Episode } from "@/lib/types";
 import { useAuth } from "@/context/AuthContext";
 import { db } from "@/lib/firebase";
-import { doc, getDoc, updateDoc, setDoc, arrayUnion, arrayRemove } from "firebase/firestore";
+import { doc, getDoc, updateDoc, setDoc, arrayUnion, arrayRemove, DropdownMenuSeparator } from "firebase/firestore";
 import { useState, useEffect, useCallback } from "react";
 import {
   DropdownMenu,
@@ -35,6 +35,7 @@ async function getAnimeData(id: string) {
 
 
 export default function AnimeDetailPage({ params }: { params: { id: string } }) {
+    const { id } = params;
     const { user } = useAuth();
     const { toast } = useToast();
     const [anime, setAnime] = useState<Anime | null>(null);
@@ -63,7 +64,7 @@ export default function AnimeDetailPage({ params }: { params: { id: string } }) 
             const userData = userDoc.data();
             let foundInList = false;
             for(const listType of listTypes) {
-                if (userData[listType.value] && userData[listType.value].includes(params.id)) {
+                if (userData[listType.value] && userData[listType.value].includes(id)) {
                     setIsInList(listType.value);
                     foundInList = true;
                     break;
@@ -74,13 +75,13 @@ export default function AnimeDetailPage({ params }: { params: { id: string } }) 
             setIsInList(false);
         }
         setListLoading(false);
-    }, [user, params.id]);
+    }, [user, id]);
 
 
     useEffect(() => {
         const fetchData = async () => {
             setLoading(true);
-            const data = await getAnimeData(params.id);
+            const data = await getAnimeData(id);
             if (!data.anime || !data.anime.id) {
                 notFound();
             }
@@ -89,7 +90,7 @@ export default function AnimeDetailPage({ params }: { params: { id: string } }) 
             setLoading(false);
         }
         fetchData();
-    }, [params.id]);
+    }, [id]);
     
     useEffect(() => {
         checkUserList();
@@ -250,4 +251,5 @@ export default function AnimeDetailPage({ params }: { params: { id: string } }) 
        )}
     </div>
   );
-}
+
+    
