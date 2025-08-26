@@ -4,13 +4,13 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 import { db } from '@/lib/firebase';
-import { collection, doc, getDoc, onSnapshot, query, where } from 'firebase/firestore';
+import { doc, onSnapshot } from 'firebase/firestore';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { AnimeCard } from "@/components/anime/AnimeCard";
 import type { Anime } from "@/lib/types";
 import { Katana } from '@/components/shared/Icons';
 import { Skeleton } from '@/components/ui/skeleton';
-import { CheckCircle, Clock, XCircle } from 'lucide-react';
+import { CheckCircle, Clock, XCircle, Loader2 } from 'lucide-react';
 import { fetchZoro } from '@/lib/utils';
 
 export default function MyListPage() {
@@ -75,6 +75,7 @@ export default function MyListPage() {
     });
 
     return () => unsub();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user]);
 
   if (authLoading || !user) {

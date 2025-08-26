@@ -37,7 +37,7 @@ async function getAnimeData(id: string) {
 
 
 export default function AnimeDetailPage({ params }: { params: { id: string } }) {
-  const { id } = React.use(params);  
+  const { id } = params;  
   const { user } = useAuth();
     const { toast } = useToast();
     const [anime, setAnime] = useState<Anime | null>(null);
@@ -77,7 +77,7 @@ export default function AnimeDetailPage({ params }: { params: { id: string } }) 
             setIsInList(false);
         }
         setListLoading(false);
-    }, [user, id]);
+    }, [user, id, listTypes]);
 
 
     useEffect(() => {
