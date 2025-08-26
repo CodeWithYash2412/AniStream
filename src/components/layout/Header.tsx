@@ -91,23 +91,24 @@ export function Header() {
 
 
   const renderNavLinks = (isMobile = false) => (
-      <nav className={isMobile ? "flex flex-col gap-4 text-lg" : "hidden gap-6 md:flex"}>
+      <nav className={isMobile ? "flex flex-col gap-4 text-lg" : "hidden md:flex items-center gap-6"}>
         {navLinks.map((link) => (
           <Link
             key={link.href}
             href={link.href}
             onClick={handleNavLinkClick}
-            className="flex items-center text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+            className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
           >
             {link.label}
           </Link>
         ))}
          {user && (
-          <Link href="/my-list" onClick={handleNavLinkClick} className="flex items-center text-sm font-medium text-muted-foreground transition-colors hover:text-foreground">
+          <Link href="/my-list" onClick={handleNavLinkClick} className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground">
             My List
           </Link>
         )}
          <Link href="/recommendations" onClick={handleNavLinkClick} className="flex items-center text-sm font-medium text-muted-foreground transition-colors hover:text-foreground">
+             <Sparkles className="mr-2 h-4 w-4 text-accent" />
             For You
           </Link>
       </nav>
@@ -115,43 +116,43 @@ export function Header() {
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <div className="container flex h-16 items-center">
-        <div className="mr-auto flex items-center gap-4">
-          <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
-            <SheetTrigger asChild>
-               <Button variant="ghost" size="icon" className="md:hidden">
-                <Menu className="h-6 w-6" />
-                <span className="sr-only">Toggle Menu</span>
-              </Button>
-            </SheetTrigger>
-             <SheetContent side="left" className="w-full sm:w-80 p-0">
-                <SheetHeader className="p-4">
-                    <SheetTitle className="sr-only">Menu</SheetTitle>
-                    <Link href="/" onClick={handleNavLinkClick} className="flex items-center space-x-2">
-                        <Clapperboard className="h-6 w-6 text-primary" />
-                        <span className="inline-block font-bold font-headline text-lg">AniStream</span>
-                    </Link>
-                </SheetHeader>
-                <Separator/>
-                <div className="p-4 flex-1">
-                    {renderNavLinks(true)}
-                </div>
-            </SheetContent>
-          </Sheet>
+      <div className="container flex h-16 items-center justify-between">
+        <div className="flex items-center gap-2">
+            <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
+                <SheetTrigger asChild>
+                   <Button variant="ghost" size="icon" className="md:hidden">
+                    <Menu className="h-6 w-6" />
+                    <span className="sr-only">Toggle Menu</span>
+                  </Button>
+                </SheetTrigger>
+                 <SheetContent side="left" className="w-full sm:w-80 p-0">
+                    <SheetHeader className="p-4 border-b">
+                        <SheetTitle className="sr-only">Menu</SheetTitle>
+                        <Link href="/" onClick={handleNavLinkClick} className="flex items-center space-x-2">
+                            <Clapperboard className="h-6 w-6 text-primary" />
+                            <span className="inline-block font-bold font-headline text-lg">AniStream</span>
+                        </Link>
+                    </SheetHeader>
+                    <div className="p-4 flex-1">
+                        {renderNavLinks(true)}
+                    </div>
+                </SheetContent>
+            </Sheet>
 
-          <Link href="/" className="hidden md:flex items-center space-x-2">
-            <Clapperboard className="h-6 w-6 text-primary" />
-            <span className="inline-block font-bold font-headline text-lg">AniStream</span>
-          </Link>
-          <div className="hidden md:block">
-            {renderNavLinks()}
-          </div>
+            <Link href="/" className="hidden md:flex items-center space-x-2">
+                <Clapperboard className="h-6 w-6 text-primary" />
+                <span className="inline-block font-bold font-headline text-lg">AniStream</span>
+            </Link>
         </div>
 
-        <div className="flex flex-1 items-center justify-end gap-4 md:flex-grow-0">
+        <div className="hidden md:flex justify-center">
+            {renderNavLinks()}
+        </div>
+
+        <div className="flex items-center justify-end gap-2 md:w-[210px]">
           <Popover open={isPopoverOpen} onOpenChange={setIsPopoverOpen}>
             <PopoverTrigger asChild>
-              <form onSubmit={handleSearchSubmit} className="relative w-full max-w-sm">
+              <form onSubmit={handleSearchSubmit} className="relative w-full max-w-sm hidden sm:block">
                 <Input
                   ref={searchInputRef}
                   type="search"
